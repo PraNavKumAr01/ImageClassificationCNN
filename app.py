@@ -1,11 +1,15 @@
 from fastapi import FastAPI, File, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 import io
 from PIL import Image
 import tensorflow as tf
 import os
 
 app = FastAPI()
+
+@app.get('/', include_in_schema=False)
+def index():
+    return RedirectResponse("/predict/", status_code=308)
 
 # Load the pre-trained model
 model = tf.keras.models.load_model(os.path.join('models', 'sentiment.h5'))
