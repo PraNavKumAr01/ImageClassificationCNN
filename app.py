@@ -30,7 +30,7 @@ def preprocess_image(image):
 async def predict(file: UploadFile = File(...)):
     try:
         # Download the model bytes from S3
-        model_response = s3.get_object(Bucket='imagesentiment', Key=mode_url)
+        model_response = s3.get_object(Bucket='imagesentiment', Key=model_url)
         model_bytes = model_response['Body'].read()
 
         # Load the model using TensorFlow
