@@ -22,7 +22,7 @@ def preprocess_image(image):
     return img
 
 # Define the prediction endpoint
-@app.get("/predict/")
+@app.post("/predict/")
 async def predict(file: UploadFile = File(...)):
     try:
         image = Image.open(io.BytesIO(await file.read()))
