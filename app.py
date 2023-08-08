@@ -4,15 +4,19 @@ import io
 from PIL import Image
 import tensorflow as tf
 import os
+import boto3
 
 app = FastAPI()
+
+# Create a connection to Amazon S3
+s3 = boto3.client('s3')
+
+# Update this URL with your S3 object URL
+model_url = 'https://imagesentiment.s3.ap-south-1.amazonaws.com/sentiment.h5'
 
 @app.get('/', include_in_schema=False)
 def index():
     return RedirectResponse("/predict/", status_code=308)
-
-# Load the pre-trained model
-model = tf.keras.models.load_model(os.path.join('models', 'sentiment.h5'))
 
 # Define a function to preprocess the image
 def preprocess_image(image):
@@ -25,6 +29,14 @@ def preprocess_image(image):
 @app.post("/predict/")
 async def predict(file: UploadFile = File(...)):
     try:
+        # Download the model bytes from S3
+        model_response = s3.get_object(Bucket='imagesentiment', Key=mode_url)
+        model_bytes = model_response['Body'].read()
+
+        # Load the model using TensorFlow
+        model = tf.keras.models.load_model(io.BytesIO(model_bytes))
+
+        # preproccesing the image
         image = Image.open(io.BytesIO(await file.read()))
         preprocessed_image = preprocess_image(image)
 
@@ -37,5 +49,5 @@ async def predict(file: UploadFile = File(...)):
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
-# if __name__ == "__main__":
-#     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
