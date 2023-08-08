@@ -1,0 +1,5 @@
+tensorflow
+fastapi
+io
+PIL
+os
