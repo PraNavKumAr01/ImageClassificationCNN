@@ -1,11 +1,24 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.middleware import Middleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 import io
 from PIL import Image
 import tensorflow as tf
 import os
 
-app = FastAPI()
+def convert_get_to_post_middleware(request: Request, call_next):
+    if request.method == "GET" and request.url.path == "/predict/":
+        request.method = "POST"
+    response = call_next(request)
+    return response
+
+middleware = [
+    Middleware(TrustedHostMiddleware),
+    Middleware(convert_get_to_post_middleware)
+]
+
+app = FastAPI(middleware=middleware)
 
 @app.get('/', include_in_schema=False)
 def index():
